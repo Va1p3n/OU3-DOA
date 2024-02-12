@@ -56,3 +56,8 @@ stack_test
 testrunner.c
 testrunner
 log.txt
+
+# Compiled files
+mtftabletest
+tabletest
+arraytabletest
