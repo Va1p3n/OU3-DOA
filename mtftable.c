@@ -32,17 +32,27 @@ struct table_entry {
 
 // ===========INTERNAL HELPER FUNCTIONS============
 
+
+/**
+ * copy_table_entry() - Copies a table entry.
+ * @entry: A pointer to a table entry to copy
+ * 
+ * Returns: Poiner to a copy of the given table entry
+*/
 struct table_entry *copy_table_entry(struct table_entry *entry)
 {
+	// Stores the pointer for the copy
 	struct table_entry *copy = malloc(sizeof(struct table_entry));
 	
+	// Allocates space for the key and copies it to the new entry
 	copy->key = malloc(sizeof(void*));
 	memcpy(copy->key, entry->key, sizeof(void*));
     
+	// Allocates space for the value and copies it to the new entry
 	copy->value = malloc(sizeof(void*));
 	memcpy(copy->value, entry->value, sizeof(void*)); 
 
-
+	// Returns a pointer to the table_entry
 	return copy;
 }
 
@@ -112,7 +122,7 @@ void table_insert(table *t, void *key, void *value)
 }
 
 /**
- * table_lookup() - Look up a given key in a table.
+ * table_lookup() - Look up a given key in a table and moves the element to the front of the table.
  * @table: Table to inspect.
  * @key: Key to look up.
  *
