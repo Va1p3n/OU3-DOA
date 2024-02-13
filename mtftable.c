@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <table.h>
 #include <dlist.h>
@@ -9,11 +10,13 @@
  * 
  * Author: Felix Vallström (c23fvm)
  * 
- * Hand in date: 2024-02-12
+ * Hand in date: 2024-02-13
  * 
  * Version:
  *   2024-02-XX: v1.0. First hand in
 */
+
+// ===========INTERNAL DATA TYPES============
 
 struct table {
 	dlist *entries;
@@ -26,6 +29,23 @@ struct table_entry {
 	void *key;
 	void *value;
 };
+
+// ===========INTERNAL HELPER FUNCTIONS============
+
+struct table_entry *copy_table_entry(struct table_entry *entry)
+{
+	struct table_entry *copy = malloc(sizeof(struct table_entry));
+	
+	copy->key = malloc(sizeof(void*));
+	memcpy(copy->key, entry->key, sizeof(void*));
+    
+	copy->value = malloc(sizeof(void*));
+	memcpy(copy->value, entry->value, sizeof(void*)); 
+
+
+	return copy;
+}
+
 
 // ===========INTERNAL FUNCTION IMPLEMENTATIONS============
 
@@ -111,8 +131,15 @@ void *table_lookup(const table *t, const void *key)
 		struct table_entry *entry = dlist_inspect(t->entries, pos);
 		// Check if the entry key matches the search key.
 		if (t->key_cmp_func(entry->key, key) == 0) {
-			// If yes, return the corresponding value pointer.
-			return entry->value;
+			// Make a copy of the entry found
+			struct table_entry *entry_copy = copy_table_entry(entry);
+
+			// Remove the entry from the table, then add it to the front
+			dlist_remove(t->entries, pos);
+			dlist_insert(t->entries, entry_copy, dlist_first(t->entries));
+
+			// Return the value of the searched entry
+			return entry_copy->value;
 		}
 		// Continue with the next position.
 		pos = dlist_next(t->entries, pos);

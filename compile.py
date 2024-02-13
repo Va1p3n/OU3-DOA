@@ -22,10 +22,10 @@ def update_hand_in_date(file_path):
 	print("Hand in date updated successfully.")
     
 def compile_file(file_name):
-	compile_command = f"gcc -std=c99 -Wall -Werror -g -I . -o {file_name}test tabletest-1.9.c {file_name}.c"
+	compile_command = f"gcc -std=c99 -Wall -Werror -g -I lib -o {file_name}test tabletest-1.9.c {file_name}.c"
 
 	if file_name == "mtftable":
-		compile_command += " dlist.c"
+		compile_command += " lib/dlist.c"
     
 	try:
 		subprocess.run(compile_command, shell=True, check=True)
