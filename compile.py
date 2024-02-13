@@ -24,7 +24,7 @@ def update_hand_in_date(file_path):
 def compile_file(file_name):
 	compile_command = f"gcc -std=c99 -Wall -Werror -g -I lib -o {file_name}test tabletest-1.9.c {file_name}.c"
 
-	if file_name == "mtftable":
+	if file_name == "mtftable" or file_name == "table":
 		compile_command += " lib/dlist.c"
     
 	try:
@@ -34,7 +34,7 @@ def compile_file(file_name):
 		print(f"Error compiling {file_name}: {e}")
          
 
-def start_tests():
+def mem_leak_test():
 	pass
 
 
@@ -42,3 +42,4 @@ def start_tests():
 files = ["mtftable", "arraytable", "table"]
 update_hand_in_date(files[0])
 compile_file(files[0])
+compile_file(files[2])

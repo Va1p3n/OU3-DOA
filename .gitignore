@@ -57,7 +57,11 @@ testrunner.c
 testrunner
 log.txt
 
+# VScode
+.vscode/*
+
 # Compiled files
 mtftabletest
 tabletest
 arraytabletest
+tabletest-1.9
