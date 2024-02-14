@@ -10,7 +10,7 @@
  * 
  * Author: Felix Vallström (c23fvm)
  * 
- * Hand in date: 2024-02-13
+ * Hand in date: 2024-02-14
  * 
  * Version:
  *   2024-02-XX: v1.0. First hand in
@@ -29,37 +29,6 @@ struct table_entry {
 	void *key;
 	void *value;
 };
-
-// ===========INTERNAL HELPER FUNCTIONS============
-
-/**
- * copy_table_entry() - Copies a table entry.
- * @entry: A pointer to a table entry to copy
- * 
- * Returns: Poiner to a copy of the given table entry
-*/
-struct table_entry *copy_table_entry(struct table_entry *entry)
-{
-	// Stores the pointer for the copy
-	struct table_entry *copy = malloc(sizeof(*entry));
-	
-	/*
-	// Allocates space for the key and copies it to the new entry
-	copy->key = malloc(sizeof(void*));
-	memcpy(copy->key, entry->key, sizeof(void*));
-    
-	// Allocates space for the value and copies it to the new entry
-	copy->value = malloc(sizeof(void*));
-	memcpy(copy->value, entry->value, sizeof(void*));
-	*/
-
-	copy->key = entry->key;
-	copy->value = entry->value;
-
-	// Returns a pointer to the
-	return copy;
-}
-
 
 // ===========INTERNAL FUNCTION IMPLEMENTATIONS============
 
@@ -145,21 +114,12 @@ void *table_lookup(const table *t, const void *key)
 		struct table_entry *entry = dlist_inspect(t->entries, pos);
 		// Check if the entry key matches the search key.
 		if (t->key_cmp_func(entry->key, key) == 0) {
-			// Make a copy of the entry found
-			struct table_entry *entry_copy = copy_table_entry(entry);
-			
-			/*
-			// Frees memory for the key and value
-			t->key_free_func(entry->key);
-			t->value_free_func(entry->value);
-			*/
-
 			// Remove the entry from the table, then add it to the front
-			dlist_remove(t->entries, pos);
-			dlist_insert(t->entries, entry_copy, dlist_first(t->entries));
+			dlist_insert(t->entries, entry, dlist_first(t->entries));
+      dlist_remove(t->entries, pos);
 
 			// Return the value of the searched entry
-			return entry_copy->value;
+			return entry->value;
 		}
 		// Continue with the next position.
 		pos = dlist_next(t->entries, pos);
