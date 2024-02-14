@@ -12,7 +12,7 @@
  * 
  * Author: Felix Vallström (c23fvm)
  * 
- * Hand in date: 2024-02-12
+ * Hand in date: 2024-02-14
  * 
  * Version:
  *   2024-02-XX: v1.0. First hand in
@@ -24,7 +24,7 @@ typedef struct table {
 	compare_function *key_cmp_func;
 	free_function key_free_func;
 	free_function value_free_func;
-	int amont_entries_set;
+	int amount_entries_set;
 } table;
 
 // Table entry type.
@@ -34,9 +34,9 @@ typedef struct table_entry
 	void *value;
 } table_entry;
 
-int search_for_key(table *t, void *key)
+int search_for_key(const table *t, const void *key)
 {
-	for (int index = 0; index < t->amont_entries_set; index++)
+	for (int index = array_1d_low(t->entries); index < t->amount_entries_set; index++)
 	{
 		table_entry *entry = array_1d_inspect_value(t->entries, index);
 
@@ -46,7 +46,7 @@ int search_for_key(table *t, void *key)
 		}
 	}
 
-	return NULL;
+	return -1;
 }
 
 /**
@@ -74,7 +74,7 @@ table *table_empty(compare_function key_cmp_func, free_function key_free_func, f
 	t->value_free_func = value_free_func;
 
 	// Sets the amount of set values for the array to 0
-	t->amont_entries_set = 0;
+	t->amount_entries_set = array_1d_low(t->entries);
 
 	return t;
 }
@@ -88,7 +88,7 @@ table *table_empty(compare_function key_cmp_func, free_function key_free_func, f
 bool table_is_empty(const table *t)
 {
 	// Entries set is 0 if the table does not have any entries
-	return t->amont_entries_set == 0;	
+	return t->amount_entries_set == array_1d_low(t->entries);	
 }
 
 /**
@@ -109,15 +109,17 @@ void table_insert(table *t, void *key, void *value)
 	// Look and store if the key is in the table and if so, where
 	int search_result = search_for_key(t, key);
 
-	// If not NULL, the key is already in the table and we overwrite it
-	if (search_for_key != NULL)
+	// If not -1, the key is already in the table and we overwrite it
+	if (search_result != -1)
 	{
 		// Extract the entry from the array 
-		table_entry *old_entry = array_1d_inspect_value(t, search_for_key);
+		table_entry *old_entry = array_1d_inspect_value(t->entries, search_result);
+		// Free value
+		t->value_free_func(old_entry->value);
 		// Change value
 		old_entry->value = value;
 		// Change the value
-		array_1d_set_value(t->entries, old_entry, search_for_key);
+		array_1d_set_value(t->entries, old_entry, search_result);
 
 		// Exits the function
 		return;
@@ -131,10 +133,10 @@ void table_insert(table *t, void *key, void *value)
 	entry->value = value;
 
 	// Insert the new entry to the table
-	array_1d_set_value(t->entries, entry, t->amont_entries_set);
+	array_1d_set_value(t->entries, entry, t->amount_entries_set);
 
 	// Increase the amount of entries is stored in the array
-	t->amont_entries_set += 1;
+	t->amount_entries_set += 1;
 }
 
 /**
@@ -151,7 +153,7 @@ void *table_lookup(const table *t, const void *key)
 	int search_result = search_for_key(t, key);
 
 	// Checks what index was stored, if NULL the key isn't in the table
-	if (search_result != NULL)
+	if (search_result != -1)
 	{
 		table_entry *looked_entry = array_1d_inspect_value(t->entries, search_result);
 
@@ -176,7 +178,7 @@ void *table_lookup(const table *t, const void *key)
 void *table_choose_key(const table *t)
 {
 	// Returns the first key in the table
-	table_entry *entry = array_1d_inspect_value(t->entries, 0);
+	table_entry *entry = array_1d_inspect_value(t->entries, array_1d_low(t->entries));
 
 	return entry->key;
 }
@@ -194,10 +196,10 @@ void *table_choose_key(const table *t)
  */
 void table_remove(table *t, const void *key)
 {
-	int search_result = search_for_key(t->entries, key);
+	int search_result = search_for_key(t, key);
 
 	// The key wasn't in the list
-	if (search_result == NULL)
+	if (search_result == -1)
 		return;
 
 	// Get the table_entry to remove from the table
@@ -208,11 +210,11 @@ void table_remove(table *t, const void *key)
 	free(remove_entry);
 
 	// We will move the last table_entry in the array to the spot where we removed the array
-	table_entry *last_entry = array_1d_inspect_value(t->entries, t->amont_entries_set);
+	table_entry *last_entry = array_1d_inspect_value(t->entries, (t->amount_entries_set - 1));
 	array_1d_set_value(t->entries, last_entry, search_result);
 
 	// Decrease amount of table_entries stored
-	t->amont_entries_set -= 1;
+	t->amount_entries_set = t->amount_entries_set - 1;
 }
 
 /**
@@ -229,7 +231,7 @@ void table_remove(table *t, const void *key)
 void table_kill(table *t)
 {
 	// Removes all entries
-	while (!table_is_empty(t->entries))
+	while (!table_is_empty(t))
 	{
 		table_remove(t, table_choose_key(t));	
 	}
@@ -253,7 +255,7 @@ void table_kill(table *t)
 void table_print(const table *t, inspect_callback_pair print_func)
 {
 	// Iterates over all the entries and calls print_func on keys/values
-	for (int index = 0; index < t->entries; index++)
+	for (int index = 0; index < t->amount_entries_set; index++)
 	{
 		table_entry *entry = array_1d_inspect_value(t->entries, index);
 

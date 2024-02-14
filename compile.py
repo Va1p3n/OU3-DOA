@@ -27,6 +27,8 @@ def compile_file(file_name):
 
     if file_name == "mtftable" or file_name == "table":
         compile_command += " lib/dlist.c"
+    elif file_name == "arraytable":
+         compile_command += " lib/array_1d.c"
 
     try:
         subprocess.run(compile_command, shell=True, check=True)
@@ -45,7 +47,7 @@ def mem_leak_test(file_name):
         try:
             subprocess.run(mem_test_command, shell=True, stdout=devnull, stderr=subprocess.STDOUT, check=True)
             print(f"No memory-leaks in {file_name}.")
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             print(f"Memory-leaks in {file_name}.")
             return 1
 
