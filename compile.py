@@ -53,9 +53,10 @@ def mem_leak_test(file_name):
 
 
 # Specify the file path here
-files = ["mtftable", "table"]
+files = ["mtftable", "arraytable", "table"]
 comp_err = 0
 update_hand_in_date(files[0])
+update_hand_in_date(files[1])
 
 for file in files:
     comp_err += compile_file(file)
