@@ -20,26 +20,48 @@ def update_hand_in_date(file_path):
 		file.write(updated_content)
 
 	print("Hand in date updated successfully.")
-    
+
+
 def compile_file(file_name):
-	compile_command = f"gcc -std=c99 -Wall -Werror -g -I lib -o {file_name}test tabletest-1.9.c {file_name}.c"
+    compile_command = f"gcc -std=c99 -Wall -Werror -g -I lib -o {file_name}test tabletest-1.9.c {file_name}.c"
 
-	if file_name == "mtftable" or file_name == "table":
-		compile_command += " lib/dlist.c"
-    
-	try:
-		subprocess.run(compile_command, shell=True, check=True)
-		print(f"Compiled {file_name} sucessfully..")
-	except subprocess.CalledProcessError as e:
-		print(f"Error compiling {file_name}: {e}")
-         
+    if file_name == "mtftable" or file_name == "table":
+        compile_command += " lib/dlist.c"
 
-def mem_leak_test():
-	pass
+    try:
+        subprocess.run(compile_command, shell=True, check=True)
+        print(f"Compiled {file_name} sucessfully..")
+    except subprocess.CalledProcessError as e:
+        print(f"Error compiling {file_name}: {e}")
+        return 1
+ 
+    return 0
+
+
+def mem_leak_test(file_name): 
+    mem_test_command = f"valgrind --leak-check=full --show-reachable=yes ./{file_name}test 10"
+
+    with open('/dev/null', 'w') as devnull:
+        try:
+            subprocess.run(mem_test_command, shell=True, stdout=devnull, stderr=subprocess.STDOUT, check=True)
+            print(f"No memory-leaks in {file_name}.")
+        except subprocess.CalledProcessError as e:
+            print(f"Memory-leaks in {file_name}.")
+            return 1
+
+    return 0
 
 
 # Specify the file path here
-files = ["mtftable", "arraytable", "table"]
+files = ["mtftable", "table"]
+comp_err = 0
 update_hand_in_date(files[0])
-compile_file(files[0])
-compile_file(files[2])
+
+for file in files:
+    comp_err += compile_file(file)
+
+if comp_err > 0:
+    quit()
+
+for file in files:
+    mem_leak_test(file)
