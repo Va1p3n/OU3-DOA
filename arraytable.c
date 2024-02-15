@@ -12,7 +12,7 @@
  * 
  * Author: Felix Vallström (c23fvm)
  * 
- * Hand in date: 2024-02-14
+ * Hand in date: 2024-02-15
  * 
  * Version:
  *   2024-02-XX: v1.0. First hand in
@@ -34,13 +34,21 @@ typedef struct table_entry
 	void *value;
 } table_entry;
 
+/**
+ * search_for_key() - Searches for the index where a key is located in the array_1d.
+ * @t: A pointer to the table to search
+ * @key: The key to search for
+ * 
+ * Returns: A index (integer) to where the key is located in the array_1d.
+ * 			NULL if the key isn't in the array.
+*/
 int search_for_key(const table *t, const void *key)
 {
-	for (int index = array_1d_low(t->entries); index < t->amount_entries_set; index++)
+	for (int index = array_1d_low(t->entries); index < (array_1d_low(t->entries) + t->amount_entries_set); index++)
 	{
 		table_entry *entry = array_1d_inspect_value(t->entries, index);
 
-		if (t->key_cmp_func(entry->key, key))
+		if (t->key_cmp_func(entry->key, key) == 0)
 		{
 			return index;
 		}
@@ -88,7 +96,7 @@ table *table_empty(compare_function key_cmp_func, free_function key_free_func, f
 bool table_is_empty(const table *t)
 {
 	// Entries set is 0 if the table does not have any entries
-	return t->amount_entries_set == array_1d_low(t->entries);	
+	return t->amount_entries_set == 0;	
 }
 
 /**
@@ -113,13 +121,18 @@ void table_insert(table *t, void *key, void *value)
 	if (search_result != -1)
 	{
 		// Extract the entry from the array 
-		table_entry *old_entry = array_1d_inspect_value(t->entries, search_result);
-		// Free value
-		t->value_free_func(old_entry->value);
-		// Change value
-		old_entry->value = value;
-		// Change the value
-		array_1d_set_value(t->entries, old_entry, search_result);
+		table_entry *found_entry = array_1d_inspect_value(t->entries, search_result);
+
+		// Free key/value
+		t->key_free_func(found_entry->key);
+		t->value_free_func(found_entry->value);
+
+		// Update key/value
+		found_entry->key = key;
+		found_entry->value = value;
+
+		// Insert the key/value into the table
+		array_1d_set_value(t->entries, found_entry, search_result);
 
 		// Exits the function
 		return;
@@ -158,7 +171,7 @@ void *table_lookup(const table *t, const void *key)
 		table_entry *looked_entry = array_1d_inspect_value(t->entries, search_result);
 
 		// Return the entry searched for
-		return looked_entry->key;
+		return looked_entry->value;
 	}
 	
 	// The element wasn't in the table
@@ -196,6 +209,7 @@ void *table_choose_key(const table *t)
  */
 void table_remove(table *t, const void *key)
 {
+	// Store the location/index of the table_entry in the array
 	int search_result = search_for_key(t, key);
 
 	// The key wasn't in the list
@@ -204,6 +218,7 @@ void table_remove(table *t, const void *key)
 
 	// Get the table_entry to remove from the table
 	table_entry *remove_entry = array_1d_inspect_value(t->entries, search_result); 
+
 	// Free key, value and element head.
 	t->key_free_func(remove_entry->key);
 	t->value_free_func(remove_entry->value);
@@ -235,9 +250,10 @@ void table_kill(table *t)
 	{
 		table_remove(t, table_choose_key(t));	
 	}
-
+	// kill the array
+	array_1d_kill(t->entries);
 	// Free the array...
-	free(t->entries);
+	//free(t->entries);
 	// ...and the table
 	free(t);
 }
