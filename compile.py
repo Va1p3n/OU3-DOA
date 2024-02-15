@@ -1,4 +1,5 @@
 import re
+import sys
 import subprocess
 from datetime import date
 
@@ -65,6 +66,7 @@ for file in files:
 
 if comp_err > 0:
     quit()
-
-for file in files:
-    mem_leak_test(file)
+    
+if "--no-mem" not in sys.argv:
+	for file in files:
+		mem_leak_test(file)
