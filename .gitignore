@@ -60,6 +60,9 @@ log.txt
 # VScode
 .vscode/*
 
+# Testlogs
+testlogs/*
+
 # Compiled files
 mtftabletest
 tabletest
