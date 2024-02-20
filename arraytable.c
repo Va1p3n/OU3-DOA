@@ -12,10 +12,10 @@
  * 
  * Author: Felix Vallström (c23fvm)
  * 
- * Hand in date: 2024-02-17
+ * Hand in date: 2024-02-20
  * 
  * Version:
- *   2024-02-XX: v1.0. First hand in
+ *   2024-02-20: v1.0. First hand in
 */
 
 // Table type.
