@@ -20,4 +20,4 @@ Please note that I **do not accept** contributions to this repository. The solut
 
 If you have any questions or concerns about the contents of this repository, please feel free to contact me.
 
-###### The text above was created in collaboration with AI. Repo was published after the course has ended/been graded.
+###### Repo was published after the course has ended/been graded.
